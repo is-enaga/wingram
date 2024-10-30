@@ -1,0 +1,36 @@
+/* :root > * {
+    /* --md-code-bg-color: #afafaf; */
+    /* --md-primary-fg-color--light: #000000;
+    --md-primary-fg-color--dark: #000000; */
+    /* } */
+    .md-typeset h1 {
+        font-weight: bold;
+        border-top: double 5px #646363;
+        border-bottom: double 5px #646363;
+        padding-bottom: 5px;
+      }
+      /* .md-typeset h2:before {
+        font-family: "FontAwesome";
+        font-weight: 900;
+        content: "◆";
+        margin-right: 5px;
+      } */
+      .md-typeset h2 {
+        font-weight: bold;
+        /* border-top: 2px solid #3aa7ff; */
+        border-left: 10px solid #3aa7ff;
+        padding-left: 5px;
+        padding-top: 2px;
+        padding-bottom: 5px;
+        background-color: #5cd9ff70;
+      }
+      .md-typeset h3:before {
+        font-family: "FontAwesome";
+        font-weight: 900;
+        content: "・";
+        margin-right: 5px;
+      }
+      .md-typeset h3 {
+        font-weight: bold;
+        border-bottom: 2px dotted #4c4c4c;
+      }

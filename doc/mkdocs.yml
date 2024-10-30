@@ -1,0 +1,202 @@
+site_name: wintools
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: ライトモードへ
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: "light blue"
+      accent: "indigo"
+      toggle:
+        icon: material/weather-sunny
+        name: ダークモードへ
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: "indigo"
+      accent: "light blue"
+      toggle:
+        icon: material/weather-night
+        name: 自動モードへ
+  
+  font:
+    text: Noto Sans JP
+    code: cascadia code
+    # math: false
+  language: ja
+  
+  logo: assets/wintools.png
+  favicon: assets/wintools.png
+
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - toc.follow
+    # - toc.integrate
+    - navigation.top
+
+    - search.suggest
+    - search.highlight
+    - search.share
+
+    - header.autohide
+
+    - navigation.footer
+
+    - content.code.copy # コードのコピーボタン https://squidfunk.github.io/mkdocs-material/reference/code-blocks/?h=code
+
+    - announce.dismiss # announce barの非表示ボタン
+
+extra:
+  # homepage: https://is-enaga.github.io/k-notes
+  
+  search:
+      language: 'jp'
+
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/is-enaga
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/winter2enaga
+
+#   consent:
+#     actions:
+#       - accept
+#       - manage
+#     title: Cookie consent
+#     description: >- 
+#       本サイトでは，サイトの構成の改善のためにGoogleによるアクセス解析ツール「Googleアナリティクス」を使用しています．
+#       このGoogleアナリティクスはCookieを使用します。このデータは匿名で収集されており、個人を特定することはできません。
+#       また広告等の収益目的にも使用しておりません．
+
+#       We use cookies to recognize your repeated visits and preferences, as well
+#       as to measure the effectiveness of our documentation and whether users
+#       find what they're searching for. With your consent, you're helping us to
+#       make our documentation better.
+#     cookies:
+#       analytics:
+#         name: Google Analytics
+#         checked: true
+
+#   analytics:
+#     provider: google
+#     property: G-SR97P4JMJ9
+#     feedback:
+#       title:  ---
+#       ratings:
+#         - icon: material/heart
+#           name: いいね!
+#           data: 1
+#           note: >-
+#             ご協力ありがとうございます! ご希望，ご指摘等があれば，GitHubのissuesでお気軽にお伝えください． <a href="https://github.com/is-enaga/k-notes/issues" target="_blank" rel="noopener">issues</a>
+#         - icon: material/heart-broken
+#           name: がんばって!
+#           data: 0
+#           note: >- 
+#             ご協力ありがとうございます! ご希望，ご指摘等があれば，GitHubのissuesでお気軽にお伝えください． <a href="https://github.com/is-enaga/k-notes/issues" target="_blank" rel="noopener">issues</a>
+# copyright: >
+#   Copyright &copy; 2024 Kei Shiraiwa –
+#   <a href="#__consent">Cookieの設定</a>
+
+plugins:
+  - privacy
+  - search
+  - table-reader
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_if_no_docstring: true
+            show_source: false
+  # - mkdocstrings:
+  #   handlers:
+  #     python:
+  #       setup_commands:
+  #         - import sys
+  #         - sys.path.append('../')
+
+extra_javascript: 
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js
+  - js/config.js
+
+extra_css:
+    - stylesheets/extra.css
+    - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css
+    - https://unpkg.com/katex@0/dist/katex.min.css
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+      # pygments_lang_class: true
+      noclasses: true
+      pygments_style: default # 背景色が変えられない．https://pygments.org/styles/
+      linenums: false # 番号の位置がずれるので没
+  # - pymdownx.highlight:
+  #     use_pygments: true
+  #     noclasses: true
+  #     pygments_style: monokai
+  #     linenums: true
+  #     line_spans: __span
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  # - pymdownx.snippets
+
+
+
+nav:
+  - トップ: index.md
+  - WINファイル:
+    - 読み込みと基本操作: howto/winfile/read.md
+    - データ処理: howto/winfile/process.md
+    - 保存: howto/winfile/write.md
+  # - 震源決定・走時計算:
+  - hypomh:
+    - 速度構造 (stanファイル): howto/hypo/stan.md
+    - 震源決定: howto/hypo/seis.md
+    - 走時計算: howto/hypo/traveltime.md
+    - 出力結果（finalファイル）: howto/hypo/final.md
+
+  - モジュール:
+    - WINファイル:
+      - WINデータクラス: module/winfile/winclass.md
+      - 読み込み: module/winfile/read.md
+      # - 書き出し: module/winfile/write.md
+    - hypomh:
+      - module/hypomh/index.md
+      - module/hypomh/stan.md
+      - module/hypomh/seis.md
+      - module/hypomh/final.md
+      - module/hypomh/init.md
+    - utils:
+      - utils/index.md
+
+  # - Code Reference:
+    # - seis: reference.md
+site_url: https://is-enaga.github.io/wintools_py/
+repo_url: https://github.com/is-enaga/wintools_py
+
+

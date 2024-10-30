@@ -1,0 +1,2 @@
+::: wintools.lib.win.winclass
+

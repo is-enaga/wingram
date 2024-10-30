@@ -1,0 +1,5 @@
+[project]
+name = "wingram"
+version = "1.0.0-beta1"
+readme = "README.md"
+license = {file="LICENSE"}
