@@ -787,6 +787,7 @@ class WIN1ch:
         else:
             tr.stats.channel = self.ch
             tr.stats.chnumber = self.ch
+        tr.stats.calib = self.params.calib
         tr.stats._format = "WIN"
         return tr
     

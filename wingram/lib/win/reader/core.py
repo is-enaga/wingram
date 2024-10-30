@@ -4,6 +4,7 @@ Module for reading WIN data (2024/09/14)
 """
 #%%
 import os
+from pathlib import Path
 import numpy as np
 # import xarray as xr
 import pandas as pd
@@ -82,7 +83,7 @@ def __read1file__(
     return outdata
 
 def __readwin__(
-    fp:list[str],
+    fp:list[Path] | list[str],
     chnumber:list[str] = None,
     targettime:datetime.datetime = None,
     beforesec:float = None,
@@ -95,7 +96,7 @@ def __readwin__(
     # =======================
     # CHECK
     # =======================
-    if type(fp) == str:
+    if isinstance(fp, (str, Path)):
         fp = [fp]
     logger.debug(f"Given {len(fp)} files.")
     # =======================
