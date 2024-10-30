@@ -16,6 +16,7 @@ The sample data is:
 `WIN_pkg-3.0.11/etc/991109.064607`
 
 # Usage
+See `example` directory for more examples.
 
 ## Read WIN data
 Give file path of WIN data 
