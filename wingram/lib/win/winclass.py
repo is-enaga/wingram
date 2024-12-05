@@ -15,6 +15,7 @@ Classes to handle WIN data.
 from multiprocessing import Value
 import os
 import re
+from pathlib import Path
 import copy
 import numpy as np
 import scipy
@@ -31,6 +32,7 @@ from ...utils.log import logger
 from ...utils.timehandler import yy2yyyy
 from ...utils.unithandler import diff_unit, integrate_unit
 from ..chtable.reader import read_chtable
+from ..chtable.writer import mk_chtable
 from ..chtable.chtable_index import IDX as CHTABLE_IDX
 from .reader.core import __readwin__
 from .writer.helper import __1ch2bin__, __add_header__, __satisfy_sample_size__, __auto_sample_size__
@@ -184,8 +186,8 @@ class Params:
     
     flag:int = 1 #[2]
     delay_time:int = 1 #[3]
-    station:str = None #[4]
-    component:str = None #[5]
+    station:str = "." #[4]
+    component:str = "." #[5]
     monitor_size:int = 3 #[6]
     ad_bit_size:int = 20 #[7]
     sensitivity:float = 1 #[8]
@@ -591,6 +593,31 @@ class WIN1ch:
     #     self.fs = fs
     #     return fs
     
+    def auto_rescale(
+        self,
+        digits = 10,
+        ):
+        """
+        Rescale data.
+        """
+        _diff = np.diff(np.sort(np.unique(self.data)))
+        _resolution = float(np.format_float_positional(
+            _diff[0],
+            precision=digits,
+            unique=False,
+            fractional=False,
+            trim='k',
+            )
+        )
+        
+        self.data = self.data / _resolution
+        # 桁数をdigitにするための係数
+        _mul = 10**(digits - int(np.log10(np.max(self.data))))
+        self.data = (self.data * _mul).astype(int)
+        self.params.ad_bit_step = self.params.ad_bit_step * _resolution / _mul
+        
+        return self
+        
     def calibrate(self):
         """
         Apply calibration factor to data.
@@ -1319,6 +1346,17 @@ class WIN:
             logger.warning("No channel was found.")
         return outdata
     
+    def auto_rescale(
+        self,
+        digits = 10,
+        ):
+        """
+        Rescale data.
+        """
+        for i in range(len(self.data)):
+            self.data.iloc[i].auto_rescale(digits=digits)
+        return self
+    
     def autofill_ch(self):
         """
         Automatically fill channel number for channels where ch is None.
@@ -1482,6 +1520,7 @@ class WIN:
         savedir:str = None,
         sample_size:int = None,
         boundary:str = "cut",
+        out_chtable:bool = True,
         **kwargs,
         )->None:
         """
@@ -1540,6 +1579,42 @@ class WIN:
         with open(savename, "wb") as f:
             f.write(out)
             logger.info(f"Saved: {savename}")
+        
+        if out_chtable:
+            chtable = self.chtable
+            if savedir is None:
+                savedir = "."
+            save_chtable_name = os.path.basename(savename)+".ch"
+            logger.info(f"Saving channel table: {savedir}/{save_chtable_name}")
+            
+            int_ch = [int(_ch,16) for _ch in chtable.ch]
+            mk_chtable(
+                code = chtable.station,
+                chnumber = int_ch,
+                flag = chtable.flag,
+                delay = chtable.delay_time,
+                cmp = chtable.component,
+                monitor_amp = chtable.monitor_size,
+                bit_length = chtable.ad_bit_size,
+                sensitivity = chtable.sensitivity,
+                unit = chtable.unit,
+                natural_period = chtable.natural_period,
+                dump = chtable.damping,
+                ADamp = chtable.ad_gain,
+                ADstep = chtable.ad_bit_step,
+                lat = chtable.lat,
+                lon = chtable.lon,
+                elev = chtable.elv,
+                p_corr = chtable.p_correction,
+                s_corr = chtable.s_correction,
+                note = chtable.note,
+                # dat: np.ndarray,
+                savedir = savedir,
+                savename = save_chtable_name,
+                save = True,
+                overwrite = True,
+            )
+        
         return
     
     # =======================
@@ -1568,7 +1643,7 @@ class WIN:
             # ----------------------
             # channel number
             # ----------------------
-            chlabel[i] = f"{self.data.index[i]}\n"
+            chlabel[i] = f"{self.ch[i]}\n"
             
             # ----------------------
             # station and component

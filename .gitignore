@@ -2,6 +2,9 @@ _test
 */stats/*
 example/WIN_pkg-3.0.11
 example/out
+example/etc
+example/obspy2win
 *.egg-info
-wingram/**/__pycache__/*
+**/__pycache__/*
 **/*.win
+**/*.ch
