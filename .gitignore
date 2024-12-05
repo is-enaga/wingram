@@ -4,3 +4,4 @@ example/WIN_pkg-3.0.11
 example/out
 *.egg-info
 wingram/**/__pycache__/*
+**/*.win
