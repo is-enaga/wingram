@@ -11,7 +11,7 @@ from ...utils import *
 # ################################################
 # WRITE TOOLS
 # ################################################
-def mk_chtbl(
+def mk_chtable(
     code:list[str],
     chnumber:list[int]=None,
     flag:list[int]=None,
@@ -206,3 +206,6 @@ def mk_chtbl(
             logger.info(f"Saved: {savefp}")
 
     return text
+
+def mk_chtbl(*args,**kwawrgs):
+    return mk_chtable(*args,**kwawrgs)
