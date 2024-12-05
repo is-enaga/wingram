@@ -12,6 +12,7 @@ Classes to handle WIN data.
         handling of starttime and endtime
 
 """
+from multiprocessing import Value
 import os
 import re
 import copy
@@ -30,6 +31,7 @@ from ...utils.log import logger
 from ...utils.timehandler import yy2yyyy
 from ...utils.unithandler import diff_unit, integrate_unit
 from ..chtable.reader import read_chtable
+from ..chtable.chtable_index import IDX as CHTABLE_IDX
 from .reader.core import __readwin__
 from .writer.helper import __1ch2bin__, __add_header__, __satisfy_sample_size__, __auto_sample_size__
 
@@ -343,7 +345,8 @@ class WIN1ch:
     params: Params
         Parameters of the data.
     """
-    ch:str = None
+    _ch: str = None
+    ch:str = _ch
     data:np.ndarray = None
     time:np.ndarray = None
     params = None
@@ -381,6 +384,26 @@ class WIN1ch:
     @property
     def timelength(self):
         return (self.endtime - self.starttime).total_seconds()
+    
+    @property
+    def ch(self):
+        return self._ch
+    
+    @ch.setter
+    def ch(self, value):
+        if isinstance(value, int):
+            value = f"{value:04X}"
+            
+        if isinstance(value, str):
+            if not re.match(r'^[0-9A-Fa-f]+$', value):
+                raise ValueError(f"Channel name must be a hexadecimal number: {value}")
+            if len(value) < 4:
+                value = value.rjust(4, '0')
+            elif len(value) > 4:
+                raise ValueError(f"Channel name must be 4 characters: {value}")
+            
+        self._ch = value
+    
     
     # =======================
     # Magic Method
@@ -429,9 +452,10 @@ class WIN1ch:
                 )
         
         if ch is not None:
-            if isinstance(ch, int):
-                ch = f"{ch:04X}"
+            # if isinstance(ch, int):
+            #     ch = f"{ch:04X}"
             self.ch = ch
+            # self._ch = ch
             
         return
         
@@ -541,12 +565,12 @@ class WIN1ch:
         # time = time.astype(np.datetime64)
         out.time = time
         # out.get_fs()
-        if tr.stats.station == "":
-            out.ch = tr.stats.channel
-        else:
-            out.params.station = tr.stats.station
-            out.params.component = tr.stats.channel
-        out.params.ad_bit_step *= tr.stats.calib
+        # if tr.stats.station == "":
+        #     out.ch = tr.stats.channel
+        # else:
+        out.params.station = tr.stats.station
+        out.params.component = tr.stats.channel
+        out.params.ad_bit_step = out.params.ad_bit_step * tr.stats.calib
         return out
     
     
@@ -818,6 +842,9 @@ class WIN1ch:
         # =======================
         # check
         # =======================
+        if data.ch is None:
+            raise ValueError("Channel number is not given.")
+        
         if data.params.is_calibed:
             data.decalibrate()
         
@@ -999,7 +1026,21 @@ class WIN:
     fp:list[str] = None
     chtablefp:str = None
     data = None
-    chtable:pd.Series = None
+    
+    @property
+    def ch(self):
+        out = [None]*len(self.data)
+        for i in range(len(self.data)):
+            out[i] = self.data.iloc[i].ch
+        return out
+    
+    @property
+    def chtable(self):
+        value_out = []
+        for i in range(len(self.data)):
+            value_out.append(self.data.iloc[i].params.chtable)
+        return pd.DataFrame(value_out, columns = CHTABLE_IDX)
+            
     
     def __repr__(self):
         txt = ""
@@ -1182,12 +1223,17 @@ class WIN:
         self.fp = fp
         return data
         
-    def read_chtable(self, fp:str, encoding:str="utf-8", apply_calib:bool = False):
+    def read_chtable(
+        self,
+        fp:str,
+        encoding:str="utf-8",
+        apply_calib:bool = False,
+        ):
         """
         Read channel table file.
         """
         self.chtablefp = fp
-        self.chtable = read_chtable(fp,encoding=encoding)
+        # self.chtable = read_chtable(fp,encoding=encoding)
         # self.conbine_chtable_data(apply_calib=apply_calib)
         
         chtable = read_chtable(fp,encoding=encoding)
@@ -1272,6 +1318,24 @@ class WIN:
         if len(outdata) == 0:
             logger.warning("No channel was found.")
         return outdata
+    
+    def autofill_ch(self):
+        """
+        Automatically fill channel number for channels where ch is None.
+        Automatical ch is start with 0000 and increment by 1.
+        """
+        _n = 0
+        
+        for i in range(len(self.data)):
+            if self.data.iloc[i].ch is not None:
+                continue
+            _auto_ch = f"{_n:04X}"
+            while _auto_ch in self.data.index:
+                _n += 1
+                _auto_ch = f"{_n:04X}"
+            self.data.iloc[i].ch = f"{i:04X}"
+            _n += 1
+        return self
     
     # =======================
     # Processing
@@ -1425,9 +1489,16 @@ class WIN:
         
         Parameters
         ----------
-        dst: str
-            Destination path. Directory or file path.
-            If Directory is given, file name will be automatically generated.
+        savename: str, optional
+            File name to save.
+        savedir: str, optional
+            Directory to save.
+        sample_size: int, optional
+            Sample size in WIN format.
+            Encouraged to be None because optimal size will be automatically estimated.
+        boundary: str, optional
+            Boundary condition for the data.
+            "cut" or "padding" or "zero-padding"
         """
         
         bitdf = self.__to_bit__(

@@ -10,13 +10,14 @@ import matplotlib.pyplot as plt
 import datetime
 from bitarray import bitarray
 from ...utils import *
+from .chtable_index import IDX
 
 def read_chtable(fp:str, encoding:str="utf-8"):
     """
     WINのチャネル表を読み込み，pandasのDataFrameで返す．
     「#」ではじまる行はコメント行として飛ばす．
     """
-    idx = ["ch", "flag", "delay_time", "station", "component", "monitor_size", "ad_bit_size", "sensitivity", "unit", "natural_period", "damping", "ad_gain", "ad_bit_step", "lat", "lon", "elv", "p_correction", "s_correction", "note"]
+    # idx = ["ch", "flag", "delay_time", "station", "component", "monitor_size", "ad_bit_size", "sensitivity", "unit", "natural_period", "damping", "ad_gain", "ad_bit_step", "lat", "lon", "elv", "p_correction", "s_correction", "note"]
     table = []
     max_row_len = 18
     with open(fp, 'r', encoding = encoding) as f:
@@ -46,7 +47,7 @@ def read_chtable(fp:str, encoding:str="utf-8"):
             logger.debug(f"{line}:WRITE")
             
     # Convert list to dataframe
-    table = pd.DataFrame(table, columns=idx[:max_row_len])
+    table = pd.DataFrame(table, columns=IDX[:max_row_len])
 
     # Modify type
     table.fillna(
