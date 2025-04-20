@@ -1,4 +1,6 @@
 _test
+**/*.tar.gz
+**/*.pyc
 */stats/*
 example/WIN_pkg-3.0.11
 example/out
